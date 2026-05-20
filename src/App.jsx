@@ -802,7 +802,7 @@ const S = {
   statCard:     { background:"#0f0f12", border:"1px solid #1a1a1f", borderRadius:12, padding:"12px 8px", textAlign:"center" },
   statVal:      { fontSize:24, fontWeight:700 },
   statLabel:    { fontSize:9, color:"#333", letterSpacing:1, marginTop:2 },
-  workoutHeader:{ display:"flex", alignItems:"center", gap:10, padding:"14px", borderBottom:"1px solid", position:"sticky", top:0, background:"#080809", zIndex:10 },
+  workoutHeader:{ display:"flex", alignItems:"center", gap:10, paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)", paddingBottom:"14px", paddingLeft:"14px", paddingRight:"14px", borderBottom:"1px solid", position:"sticky", top:0, background:"#080809", zIndex:10 },
   backBtn:      { background:"none", border:"none", color:"#555", cursor:"pointer", fontSize:14, padding:"6px 0", fontFamily:"inherit" },
   completeBtn:  { border:"none", color:"#000", fontWeight:700, padding:"8px 12px", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", whiteSpace:"nowrap" },
   deloadAlert:  { background:"#0f0800", borderLeft:"3px solid #F7971E", color:"#F7971E", padding:"10px 16px", fontSize:12, lineHeight:1.6 },
