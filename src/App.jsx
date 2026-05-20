@@ -1,19 +1,26 @@
 import { useState, useCallback } from "react";
 
 // ─── HYPERTROPHY 365 V2 ───────────────────────────────────────────────────────
-// 5-DAY PPL SPLIT — Optimized for Maximum Muscle Size
-// Mon=Push A · Tue=Pull A · Wed=Legs · Thu=Push B · Fri=Pull B
+// 5-DAY PPL SPLIT — Low-Back Safe, No Spinal Compression
+//
+// BANNED: Barbell Back Squat, Front Squat, Good Morning, Barbell OHP (standing),
+//         any loaded axial spinal compression movement
+//
+// SAFE alternatives used throughout:
+// Squatting → Leg Press, Hack Squat, Bulgarian Split Squat, Goblet Squat
+// Hinging   → DB/BB RDL (hinge not compression), Cable Pull-Through, Hip Thrust
+// Pressing  → DB OHP (seated), Landmine Press, Machine Press (no spinal load)
 
 const PHASES = [
-  { name: "Volume Foundation",   weeks: [1,8],   focus: "4×10-12 | RPE 7-8 | 15-18 sets/muscle/wk", color: "#00C9A7" },
-  { name: "Hypertrophy Drive",   weeks: [9,20],  focus: "4-5×8-12 | RPE 8 | 20-22 sets/muscle/wk | Peak volume", color: "#4FACFE" },
-  { name: "Intensification",     weeks: [21,30], focus: "4-5×6-10 | RPE 8-9 | Slow eccentrics + advanced techniques", color: "#F7971E" },
-  { name: "Strength-Size",       weeks: [31,42], focus: "5×4-8 compound / 10-15 iso | RPE 9 | Heavy & hard", color: "#C471ED" },
-  { name: "Specialization Peak", weeks: [43,52], focus: "4×8-12 | Lagging muscles prioritized | Deload every 4th wk", color: "#FF6B6B" },
+  { name: "Volume Foundation",   weeks: [1,8],   focus: "4×10-12 | RPE 7-8 | 15-18 sets/muscle/wk | Build the base", color: "#22D3EE" },
+  { name: "Hypertrophy Drive",   weeks: [9,20],  focus: "4-5×8-12 | RPE 8 | 20-22 sets/muscle/wk | Peak volume block", color: "#818CF8" },
+  { name: "Intensification",     weeks: [21,30], focus: "4-5×6-10 | RPE 8-9 | Slow eccentrics + advanced techniques", color: "#FB923C" },
+  { name: "Strength-Size",       weeks: [31,42], focus: "5×4-8 compound / 10-15 iso | RPE 9 | Heavy & hard", color: "#34D399" },
+  { name: "Specialization Peak", weeks: [43,52], focus: "4×8-12 | Lagging muscles prioritized | Deload every 4th wk", color: "#F472B6" },
 ];
 
 const SESSION_MAP    = { 1:"A", 2:"B", 3:"C", 4:"D", 5:"E", 6:null, 0:null };
-const SESSION_COLORS = { A:"#FF6B6B", B:"#4FACFE", C:"#00C9A7", D:"#F7971E", E:"#C471ED" };
+const SESSION_COLORS = { A:"#F87171", B:"#60A5FA", C:"#34D399", D:"#FB923C", E:"#A78BFA" };
 const SESSION_LABELS = {
   A: "Push A · Chest / Shoulders / Tris",
   B: "Pull A · Back / Biceps / Rear Delt",
@@ -53,75 +60,75 @@ function getTech(phase, block) {
   ][phase - 1][block % 3];
 }
 function ex(name, sets, reps, notes) { return { exercise: name, sets, reps, notes: notes || "" }; }
-
-// pick(table, p, b) — table is 5 rows (phases) × 3 cols (blocks), returns a string
 function pick(table, p, b) {
   const row = table[Math.min(p - 1, table.length - 1)];
   return row[b % row.length];
 }
 
 function getWorkout(session, weekNum) {
-  const p  = getPhaseNum(weekNum);
-  const b  = getBlock(weekNum);
-  const sr = getSR(p);
-  const t  = getTech(p, b);
+  const p   = getPhaseNum(weekNum);
+  const b   = getBlock(weekNum);
+  const sr  = getSR(p);
+  const t   = getTech(p, b);
   const adv = p >= 3 ? t : "";
 
-  // ── SESSION A: Push A — Chest Focus ──────────────────────────────────────
+  // ── SESSION A: Push A — Chest Focus + Shoulders + Triceps ────────────────
+  // No standing barbell OHP — seated DB press only (no spinal compression)
   if (session === "A") {
     const chestComp = pick([
-      ["Barbell Bench Press",         "DB Bench Press",              "Weighted Dip"],
-      ["Barbell Bench Press",         "DB Bench (2-sec eccentric)",  "Barbell Bench (pause)"],
-      ["Barbell Bench (rest-pause)",  "DB Bench (drop set)",         "Barbell Bench (1.5-rep)"],
-      ["Barbell Bench Press (heavy)", "Close-Grip Bench Press",      "DB Bench (mech drop)"],
-      ["Barbell Bench Press",         "DB Bench Press",              "Weighted Dip"],
+      ["Barbell Bench Press",        "DB Bench Press",             "Weighted Dip (assisted if needed)"],
+      ["Barbell Bench Press",        "DB Bench (2-sec eccentric)", "Barbell Bench (pause at chest)"],
+      ["Barbell Bench (rest-pause)", "DB Bench (drop set)",        "Barbell Bench (1.5-rep)"],
+      ["Barbell Bench (heavy)",      "Close-Grip Bench Press",     "DB Bench (mechanical drop)"],
+      ["Barbell Bench Press",        "DB Bench Press",             "Weighted Dip"],
     ], p, b);
     const chestInc = pick([
-      ["DB Incline Press",          "Cable Incline Fly",      "Machine Incline Press"],
-      ["DB Incline Press",          "DB Incline (2-sec lower)","High-to-Low Cable Fly"],
-      ["DB Incline (rest-pause)",   "DB Incline (drop set)",  "DB Incline (1.5-rep)"],
-      ["DB Incline Press (heavy)",  "Machine Incline (pause)","Barbell Incline (heavy)"],
-      ["DB Incline Press",          "Cable Incline Fly",      "DB Incline (slow)"],
+      ["DB Incline Press",         "Cable Incline Fly",       "Machine Incline Press"],
+      ["DB Incline Press",         "DB Incline (2-sec lower)","High-to-Low Cable Fly"],
+      ["DB Incline (rest-pause)",  "DB Incline (drop set)",   "DB Incline (1.5-rep)"],
+      ["DB Incline (heavy)",       "Machine Incline (pause)", "Barbell Incline Press"],
+      ["DB Incline Press",         "Cable Incline Fly",       "DB Incline (slow)"],
     ], p, b);
     const chestIso = pick([
       ["Pec Dec",              "Low-to-High Cable Fly",  "DB Fly"],
-      ["Pec Dec (slow ecc)",   "Cable Fly (2-sec peak)", "DB Fly (pause)"],
+      ["Pec Dec (slow ecc)",   "Cable Fly (2-sec peak)", "DB Fly (pause at peak)"],
       ["Pec Dec (drop set)",   "Cable Fly (rest-pause)", "Cable Fly (1.5-rep)"],
       ["Pec Dec (triple drop)","Weighted Dip",           "Cable Crossover"],
       ["Pec Dec",              "Low-to-High Cable Fly",  "High-to-Low Cable Fly"],
     ], p, b);
+    // SEATED DB press — no axial load on spine
     const ohp = pick([
-      ["DB Shoulder Press",        "Arnold Press",           "Cable Shoulder Press"],
-      ["DB Shoulder Press",        "Arnold Press",           "DB Press (slow eccentric)"],
-      ["DB Press (rest-pause)",    "Arnold Press (pause)",   "DB Press (1.5-rep)"],
-      ["Barbell OHP (heavy)",      "DB Press (heavy)",       "Z-Press"],
-      ["DB Shoulder Press",        "Arnold Press",           "Machine Shoulder Press"],
+      ["Seated DB Shoulder Press",        "Seated Arnold Press",          "Landmine Press"],
+      ["Seated DB Shoulder Press",        "Seated Arnold Press",          "Seated DB Press (slow ecc)"],
+      ["Seated DB Press (rest-pause)",    "Seated Arnold Press (pause)",  "Landmine Press (heavy)"],
+      ["Seated DB Press (heavy)",         "Machine Shoulder Press",       "Landmine Press (heavy)"],
+      ["Seated DB Shoulder Press",        "Seated Arnold Press",          "Machine Shoulder Press"],
     ], p, b);
     const lateral = pick([
-      ["DB Lateral Raise",       "Cable Lateral Raise",       "Machine Lateral Raise"],
-      ["Cable Lateral Raise",    "Lean-Away Cable Lateral",   "DB Lateral (drop set)"],
-      ["Lateral (rest-pause)",   "Lateral (2-sec hold top)",  "Cable Lateral (cross-body)"],
-      ["Cable Lateral (heavy)",  "Lateral (triple drop)",     "Lateral (1.5-rep)"],
-      ["Cable Lateral Raise",    "DB Lateral Raise",          "Machine Lateral Raise"],
+      ["DB Lateral Raise",      "Cable Lateral Raise",      "Machine Lateral Raise"],
+      ["Cable Lateral Raise",   "Lean-Away Cable Lateral",  "DB Lateral (drop set)"],
+      ["Lateral (rest-pause)",  "Lateral (2-sec hold top)", "Cable Lateral (cross-body)"],
+      ["Cable Lateral (heavy)", "Lateral (triple drop)",    "Lateral (1.5-rep)"],
+      ["Cable Lateral Raise",   "DB Lateral Raise",         "Machine Lateral Raise"],
     ], p, b);
     const tri1 = pick([
-      ["Tricep Pushdown (rope)", "EZ-Bar Skull Crusher",    "Close-Grip Bench Press"],
-      ["Skull Crusher (2-sec)",  "Overhead Cable Ext.",     "Pushdown (slow)"],
-      ["Pushdown (drop set)",    "Skull Crusher (drop)",    "Overhead Ext. (rest-pause)"],
-      ["Weighted Dip",           "JM Press",                "Skull Crusher (heavy)"],
-      ["Tricep Pushdown (rope)", "Skull Crusher",           "Overhead Cable Ext."],
+      ["Tricep Pushdown (rope)", "EZ-Bar Skull Crusher",  "Close-Grip Bench Press"],
+      ["Skull Crusher (2-sec)",  "Overhead Cable Ext.",   "Pushdown (slow)"],
+      ["Pushdown (drop set)",    "Skull Crusher (drop)",  "Overhead Ext. (rest-pause)"],
+      ["Weighted Dip",           "JM Press",              "Skull Crusher (heavy)"],
+      ["Tricep Pushdown (rope)", "Skull Crusher",         "Overhead Cable Ext."],
     ], p, b);
     const tri2 = pick([
-      ["Overhead DB Ext. (single)", "Cable Overhead Ext.", "Tate Press"],
-      ["Overhead Cable Ext. (slow)","Tate Press (pause)",  "DB Overhead (2-sec)"],
-      ["Overhead Ext. (rest-pause)","Tate Press (drop)",   "Cable OH (1.5-rep)"],
-      ["JM Press",                  "DB Overhead (heavy)", "Cable Overhead (heavy)"],
-      ["Overhead DB Ext.",          "Cable Overhead Ext.", "Tate Press"],
+      ["Overhead DB Ext. (seated, single arm)", "Cable Overhead Ext.", "Tate Press"],
+      ["Overhead Cable Ext. (slow)",            "Tate Press (pause)",  "DB Overhead (2-sec)"],
+      ["Overhead Ext. (rest-pause)",            "Tate Press (drop)",   "Cable OH (1.5-rep)"],
+      ["JM Press",                              "DB Overhead (heavy)", "Cable Overhead (heavy)"],
+      ["Overhead DB Ext. (seated)",             "Cable Overhead Ext.", "Tate Press"],
     ], p, b);
     return {
       name: "Push A — Chest Focus", session: "A",
       warmup: "Band pull-aparts ×20 + rotator cuff circuit + push-up warm-up ×15 + shoulder CARs",
-      note: "Chest primary — hit bench hard while fresh. Shoulders secondary today.",
+      note: "Chest primary — bench hard while fresh. All pressing seated or supported — no spinal load.",
       exercises: [
         ex(chestComp, sr.sets, sr.comp, adv),
         ex(chestInc,  sr.sets, sr.comp, adv),
@@ -129,7 +136,7 @@ function getWorkout(session, weekNum) {
         ex(ohp,       sr.sets, sr.comp, adv),
         ex(lateral,   "4",     sr.iso,  p >= 3 ? t : ""),
         ex(tri1,      "3-4",   sr.iso,  ""),
-        ex(tri2,      "3",     sr.iso,  p >= 3 ? t : ""),
+        ex(tri2,      "3",     sr.iso,  p >= 3 ? t : "Seated — no lumbar load"),
       ]
     };
   }
@@ -143,12 +150,13 @@ function getWorkout(session, weekNum) {
       ["Weighted Pull-Up (heavy)", "Lat Pulldown (heavy)",   "Chin-Up (heavy)"],
       ["Weighted Pull-Up",         "Lat Pulldown",           "Weighted Chin-Up"],
     ], p, b);
+    // Chest-supported rows — no spinal erector loading under heavy flexion
     const rowComp = pick([
-      ["Barbell Row",             "Chest-Supported Row",          "Meadows Row"],
-      ["Barbell Row (2-sec)",     "Chest-Supported Row (slow)",   "Pendlay Row"],
-      ["Barbell Row (rest-pause)","CS Row (drop set)",            "Kroc Row"],
-      ["Barbell Row (heavy)",     "Seal Row",                     "Meadows Row (heavy)"],
-      ["Barbell Row",             "Chest-Supported Row",          "Meadows Row"],
+      ["Chest-Supported Row",        "Meadows Row",                  "Single-Arm DB Row (braced)"],
+      ["Chest-Supported Row (slow)", "Pendlay Row",                  "Single-Arm DB Row (braced)"],
+      ["CS Row (drop set)",          "Chest-Supported Row (pause)",  "SA Row (rest-pause)"],
+      ["Chest-Supported Row (heavy)","Seal Row",                     "Meadows Row (heavy)"],
+      ["Chest-Supported Row",        "Meadows Row",                  "Single-Arm DB Row"],
     ], p, b);
     const pullIso = pick([
       ["Cable Straight-Arm Pulldown", "Single-Arm Lat Pulldown", "Cable Pullover"],
@@ -158,30 +166,30 @@ function getWorkout(session, weekNum) {
       ["Cable Straight-Arm Pulldown", "Cable Pullover",          "Single-Arm Lat Pulldown"],
     ], p, b);
     const rearDelt = pick([
-      ["Cable Face Pull (rope)",     "Rear Delt DB Fly",      "Cable Reverse Fly"],
-      ["Cable Face Pull",            "Rear Delt DB Fly (slow)","Cable RD (2-sec hold)"],
-      ["Face Pull (rest-pause)",     "Rear Delt (drop set)",  "Cable RD (1.5-rep)"],
-      ["Cable Face Pull (heavy)",    "Rear Delt (triple drop)","Prone RD (weighted)"],
-      ["Cable Face Pull (rope)",     "Rear Delt DB Fly",      "Cable Reverse Fly"],
+      ["Cable Face Pull (rope)",    "Rear Delt DB Fly",       "Cable Reverse Fly"],
+      ["Cable Face Pull",           "Rear Delt DB Fly (slow)","Cable RD (2-sec hold)"],
+      ["Face Pull (rest-pause)",    "Rear Delt (drop set)",   "Cable RD (1.5-rep)"],
+      ["Cable Face Pull (heavy)",   "Rear Delt (triple drop)","Prone RD (weighted)"],
+      ["Cable Face Pull (rope)",    "Rear Delt DB Fly",       "Cable Reverse Fly"],
     ], p, b);
     const curl1 = pick([
-      ["Barbell Curl",           "EZ-Bar Curl",        "DB Curl"],
-      ["Barbell Curl (2-sec)",   "Incline DB Curl",    "EZ Curl (slow)"],
-      ["Barbell Curl (rest-pause)","Curl (drop set)",  "DB Curl (1.5-rep)"],
-      ["Barbell Curl (heavy)",   "EZ Curl (heavy)",    "DB Curl (heavy)"],
-      ["Barbell Curl",           "EZ-Bar Curl",        "Incline DB Curl"],
+      ["Barbell Curl",            "EZ-Bar Curl",     "DB Curl"],
+      ["Barbell Curl (2-sec)",    "Incline DB Curl", "EZ Curl (slow)"],
+      ["Barbell Curl (rest-pause)","Curl (drop set)","DB Curl (1.5-rep)"],
+      ["Barbell Curl (heavy)",    "EZ Curl (heavy)", "DB Curl (heavy)"],
+      ["Barbell Curl",            "EZ-Bar Curl",     "Incline DB Curl"],
     ], p, b);
     const curl2 = pick([
-      ["Preacher Curl (EZ)",       "Concentration Curl",   "Cable Curl"],
-      ["Preacher Curl (slow)",     "Bayesian Cable Curl",  "Concentration (2-sec)"],
-      ["Preacher (rest-pause)",    "Bayesian (drop set)",  "Preacher (1.5-rep)"],
-      ["Preacher (heavy)",         "Cable Curl (heavy)",   "Bayesian (triple)"],
-      ["Preacher Curl (EZ)",       "Bayesian Cable Curl",  "Concentration Curl"],
+      ["Preacher Curl (EZ)",     "Concentration Curl",  "Cable Curl"],
+      ["Preacher Curl (slow)",   "Bayesian Cable Curl", "Concentration (2-sec)"],
+      ["Preacher (rest-pause)",  "Bayesian (drop set)", "Preacher (1.5-rep)"],
+      ["Preacher (heavy)",       "Cable Curl (heavy)",  "Bayesian (triple)"],
+      ["Preacher Curl (EZ)",     "Bayesian Cable Curl", "Concentration Curl"],
     ], p, b);
     return {
       name: "Pull A — Back Width & Biceps", session: "B",
       warmup: "Band pull-aparts ×20 + face pulls ×15 + dead hangs ×30s + shoulder ext. rotation ×15",
-      note: "Lat width via vertical pulls. Hit pull-ups first — back before biceps.",
+      note: "Lat width via vertical pulls. Rows are chest-supported — protects lower back.",
       exercises: [
         ex(pullComp, sr.sets, sr.comp, adv),
         ex(rowComp,  sr.sets, sr.comp, adv),
@@ -194,49 +202,46 @@ function getWorkout(session, weekNum) {
     };
   }
 
-  // ── SESSION C: Legs ───────────────────────────────────────────────────────
+  // ── SESSION C: Legs — NO spinal compression ───────────────────────────────
+  // Leg Press, Hack Squat, Goblet Squat, Split Squat — all low/no spinal load
+  // RDL is hip hinge (posterior chain tension) — NOT spinal compression
+  // NO: Barbell Back Squat, Front Squat, Good Morning, Zercher Squat
   if (session === "C") {
-    const squat = pick([
-      ["Barbell Back Squat",        "Barbell Front Squat",   "High-Bar Squat"],
-      ["Barbell Back Squat",        "Barbell Back Squat (2-sec pause)","Front Squat"],
-      ["Squat (rest-pause)",        "Pause Squat (heavy)",   "Front Squat (heavy)"],
-      ["Barbell Back Squat (heavy)","Low-Bar Squat",         "Front Squat (heavy)"],
-      ["Barbell Back Squat",        "Pause Squat",           "Front Squat"],
+    const quadComp = pick([
+      ["Leg Press (high foot, wide)",     "Hack Squat Machine",           "Goblet Squat (heels elevated)"],
+      ["Leg Press (slow eccentric)",      "Hack Squat (pause at bottom)", "Single-Leg Leg Press"],
+      ["Leg Press (drop set)",            "Hack Squat (rest-pause)",      "Leg Press (rest-pause)"],
+      ["Leg Press (heavy)",               "Hack Squat (heavy)",           "Single-Leg Press (heavy)"],
+      ["Leg Press (high foot)",           "Hack Squat Machine",           "Goblet Squat"],
     ], p, b);
-    const legPress = pick([
-      ["Leg Press (high foot)",  "Leg Press (wide stance)", "Hack Squat Machine"],
-      ["Leg Press (slow ecc)",   "Hack Squat",              "Single-Leg Press"],
-      ["Leg Press (drop set)",   "Hack Squat (pause)",      "Leg Press (rest-pause)"],
-      ["Leg Press (heavy)",      "Hack Squat (heavy)",      "Single-Leg Press (heavy)"],
-      ["Leg Press",              "Hack Squat",              "Single-Leg Press"],
+    const splitSquat = pick([
+      ["DB Bulgarian Split Squat",       "Reverse Lunge (DB)",           "Step-Up (DB)"],
+      ["BSS (pause at bottom)",          "Deficit Reverse Lunge (DB)",   "Step-Up (heavy DB)"],
+      ["BSS (1.5-rep)",                  "BSS (slow eccentric)",         "Deficit Lunge (drop set)"],
+      ["BSS (heavy DB)",                 "Walking Lunge (DB, heavy)",    "Split Squat (heavy DB)"],
+      ["DB Bulgarian Split Squat",       "Reverse Lunge (DB)",           "Step-Up (DB)"],
     ], p, b);
-    const lunge = pick([
-      ["DB Bulgarian Split Squat",      "Reverse Lunge (BB)",       "Step-Up (DB)"],
-      ["Bulgarian Split Squat (pause)", "Deficit Reverse Lunge",    "Step-Up (heavy)"],
-      ["BSS (1.5-rep)",                 "Lunge (drop set)",         "Deficit Lunge (slow)"],
-      ["BSS (heavy)",                   "Walking Lunge (BB)",       "Split Squat (heavy)"],
-      ["DB Bulgarian Split Squat",      "Reverse Lunge",            "Step-Up"],
-    ], p, b);
+    // RDL = hip hinge, tensile load on posterior chain — safe for low back
     const rdl = pick([
-      ["Romanian Deadlift (BB)",  "DB Romanian Deadlift",    "Trap Bar Deadlift"],
-      ["BB RDL (3-sec eccentric)","Single-Leg RDL",          "BB RDL (pause at knee)"],
-      ["BB RDL (rest-pause)",     "BB RDL (drop set)",       "Single-Leg RDL (slow)"],
-      ["Conventional Deadlift",   "BB RDL (heavy)",          "Trap Bar DL (heavy)"],
-      ["Romanian Deadlift (BB)",  "Single-Leg RDL",          "DB Romanian Deadlift"],
+      ["DB Romanian Deadlift",           "Single-Leg DB RDL",            "Cable Pull-Through"],
+      ["DB RDL (3-sec eccentric)",       "Single-Leg RDL (slow)",        "DB RDL (pause at knee)"],
+      ["DB RDL (rest-pause)",            "DB RDL (drop set)",            "Single-Leg RDL (slow)"],
+      ["DB RDL (heavy)",                 "Single-Leg RDL (heavy)",       "Cable RDL (heavy)"],
+      ["DB Romanian Deadlift",           "Single-Leg DB RDL",            "Cable Pull-Through"],
     ], p, b);
     const legCurl = pick([
-      ["Leg Curl (lying)",      "Single-Leg Curl",      "Nordic Eccentric Curl"],
-      ["Leg Curl (3-sec ecc)",  "Nordic Eccentric",     "Single-Leg Curl (slow)"],
-      ["Leg Curl (drop set)",   "Leg Curl (rest-pause)","Leg Curl (1.5-rep)"],
-      ["Leg Curl (heavy)",      "Nordic Curl",          "GHR"],
-      ["Leg Curl (lying)",      "Single-Leg Curl",      "Nordic Eccentric Curl"],
+      ["Leg Curl (lying)",        "Single-Leg Curl",      "Nordic Eccentric Curl"],
+      ["Leg Curl (3-sec ecc)",    "Nordic Eccentric",     "Single-Leg Curl (slow)"],
+      ["Leg Curl (drop set)",     "Leg Curl (rest-pause)","Leg Curl (1.5-rep)"],
+      ["Leg Curl (heavy)",        "Nordic Curl",          "GHR"],
+      ["Leg Curl (lying)",        "Single-Leg Curl",      "Nordic Eccentric Curl"],
     ], p, b);
     const hipThrust = pick([
-      ["Barbell Hip Thrust",          "BB Hip Thrust (pause)",      "Hip Thrust (band+BB)"],
-      ["BB Hip Thrust (3-sec ecc)",   "Hip Thrust (slow+pause)",    "Single-Leg Hip Thrust"],
-      ["Hip Thrust (rest-pause)",     "Hip Thrust (drop set)",      "Hip Thrust (1.5-rep)"],
-      ["BB Hip Thrust (heavy)",       "Single-Leg Hip Thrust (heavy)","Hip Thrust (pause heavy)"],
-      ["Barbell Hip Thrust",          "BB Hip Thrust (pause)",      "Single-Leg Hip Thrust"],
+      ["Barbell Hip Thrust",          "BB Hip Thrust (2-sec pause)",    "Hip Thrust (band + BB)"],
+      ["BB Hip Thrust (3-sec ecc)",   "Hip Thrust (slow + pause)",      "Single-Leg Hip Thrust"],
+      ["Hip Thrust (rest-pause)",     "Hip Thrust (drop set)",          "Hip Thrust (1.5-rep)"],
+      ["BB Hip Thrust (heavy)",       "Single-Leg Hip Thrust (heavy)",  "Hip Thrust (paused, heavy)"],
+      ["Barbell Hip Thrust",          "BB Hip Thrust (pause)",          "Single-Leg Hip Thrust"],
     ], p, b);
     const legExt = pick([
       ["Leg Extension",             "Leg Extension (slow ecc)",   "Leg Extension (1.5-rep)"],
@@ -247,44 +252,44 @@ function getWorkout(session, weekNum) {
     ], p, b);
     return {
       name: "Legs — Quad / Ham / Glute / Calf", session: "C",
-      warmup: "10 min bike + hip flexor stretch ×60s + banded glute bridges ×20 + leg swings ×10",
-      note: "Squat heavy first while fresh. Hinge second. High effort throughout.",
+      warmup: "10 min bike + hip flexor stretch ×60s + banded glute bridges ×20 + leg swings ×10 each",
+      note: "NO spinal compression — leg press and hack squat replace barbell squat. RDL is hip hinge (safe). Go heavy on everything else.",
       exercises: [
-        ex(squat,    sr.sets, sr.comp, adv),
-        ex(legPress, sr.sets, sr.comp, adv),
-        ex(lunge,    "4",     sr.comp, ""),
-        ex(rdl,      sr.sets, sr.comp, adv),
-        ex(legCurl,  sr.sets, sr.iso,  adv),
-        ex(hipThrust,"4",     sr.iso,  p >= 3 ? t : "Squeeze hard at top"),
-        ex(legExt,   "4",     sr.iso,  p >= 3 ? t : ""),
+        ex(quadComp,  sr.sets, sr.comp, adv),
+        ex(splitSquat,"4",     sr.comp, "DB only — no barbell on back"),
+        ex(rdl,       sr.sets, sr.comp, adv),
+        ex(legCurl,   sr.sets, sr.iso,  adv),
+        ex(hipThrust, "4",     sr.iso,  p >= 3 ? t : "Drive hips — squeeze glute hard at top"),
+        ex(legExt,    "4",     sr.iso,  p >= 3 ? t : ""),
         ex("Seated Calf Raise",   "4", "12-15", "Full ROM — 3-sec eccentric, pause at stretch"),
         ex("Standing Calf Raise", "3", "15-20", "Single-leg if possible"),
       ]
     };
   }
 
-  // ── SESSION D: Push B — Shoulder Focus ────────────────────────────────────
+  // ── SESSION D: Push B — Shoulder Focus + Chest + Triceps ─────────────────
+  // Seated pressing only — no standing barbell OHP
   if (session === "D") {
     const ohpComp = pick([
-      ["Barbell OHP",            "DB Shoulder Press",    "Landmine Press"],
-      ["Barbell OHP (slow ecc)", "Arnold Press",         "Cable Shoulder Press"],
-      ["Barbell OHP (rest-pause)","DB Press (drop set)", "Arnold Press (pause)"],
-      ["Barbell OHP (heavy)",    "DB Press (heavy)",     "Push Press (heavy)"],
-      ["Barbell OHP",            "DB Shoulder Press",    "Machine Shoulder Press"],
+      ["Seated DB Shoulder Press",       "Seated Arnold Press",         "Landmine Press"],
+      ["Seated DB Press (slow ecc)",     "Seated Arnold Press",         "Machine Shoulder Press"],
+      ["Seated DB Press (rest-pause)",   "Seated DB Press (drop set)",  "Landmine Press (heavy)"],
+      ["Seated DB Press (heavy)",        "Machine Shoulder Press",      "Landmine Press (max)"],
+      ["Seated DB Shoulder Press",       "Seated Arnold Press",         "Machine Shoulder Press"],
     ], p, b);
     const lateral2 = pick([
-      ["DB Lateral Raise",       "Cable Lateral Raise",       "Machine Lateral Raise"],
-      ["Lean-Away Cable Lateral","DB Lateral (drop set)",     "Cable Lateral (cross-body)"],
-      ["Lateral (rest-pause)",   "Lateral (2-sec hold top)",  "Lateral (cheat + control)"],
-      ["Cable Lateral (heavy)",  "Lateral (triple drop)",     "Lateral (1.5-rep)"],
-      ["DB Lateral Raise",       "Cable Lateral Raise",       "Machine Lateral Raise"],
+      ["DB Lateral Raise",      "Cable Lateral Raise",       "Machine Lateral Raise"],
+      ["Lean-Away Cable Lateral","DB Lateral (drop set)",    "Cable Lateral (cross-body)"],
+      ["Lateral (rest-pause)",  "Lateral (2-sec hold top)",  "Lateral (cheat + control)"],
+      ["Cable Lateral (heavy)", "Lateral (triple drop)",     "Lateral (1.5-rep)"],
+      ["DB Lateral Raise",      "Cable Lateral Raise",       "Machine Lateral Raise"],
     ], p, b);
     const frontDelt = pick([
-      ["DB Front Raise",          "Cable Front Raise",          "Plate Front Raise"],
-      ["DB Front Raise (slow)",   "Cable Front (2-sec pause)",  "Plate Raise (slow)"],
-      ["Front Raise (rest-pause)","Front Raise (drop set)",     "Cable Front (1.5-rep)"],
-      ["DB Front Raise (heavy)",  "Cable Front Raise (heavy)",  "Plate Raise (heavy)"],
-      ["DB Front Raise",          "Cable Front Raise",          "Plate Front Raise"],
+      ["DB Front Raise (seated)",        "Cable Front Raise",         "Plate Front Raise"],
+      ["DB Front Raise (seated, slow)",  "Cable Front (2-sec pause)", "Plate Raise (slow)"],
+      ["Front Raise (rest-pause)",       "Front Raise (drop set)",    "Cable Front (1.5-rep)"],
+      ["DB Front Raise (heavy)",         "Cable Front (heavy)",       "Plate Raise (heavy)"],
+      ["DB Front Raise (seated)",        "Cable Front Raise",         "Plate Front Raise"],
     ], p, b);
     const chestComp2 = pick([
       ["DB Bench Press",       "Low-to-High Cable Fly",  "Pec Dec"],
@@ -294,27 +299,27 @@ function getWorkout(session, weekNum) {
       ["DB Bench Press",       "Pec Dec",                "Low-to-High Cable Fly"],
     ], p, b);
     const rearDelt2 = pick([
-      ["Rear Delt DB Fly",         "Cable Reverse Fly",    "Prone Rear Delt Fly"],
-      ["Rear Delt (slow 2-sec)",   "Cable RD (pause)",     "Prone RD (weighted)"],
-      ["Rear Delt (drop set)",     "Cable RD (rest-pause)","Rear Delt (1.5-rep)"],
-      ["Rear Delt (heavy)",        "Cable RD (triple drop)","Prone RD (heavy)"],
-      ["Rear Delt DB Fly",         "Cable Reverse Fly",    "Rear Delt Machine"],
+      ["Rear Delt DB Fly",       "Cable Reverse Fly",     "Prone Rear Delt Fly"],
+      ["Rear Delt (slow 2-sec)", "Cable RD (pause peak)", "Prone RD (weighted)"],
+      ["Rear Delt (drop set)",   "Cable RD (rest-pause)", "Rear Delt (1.5-rep)"],
+      ["Rear Delt (heavy)",      "Cable RD (triple drop)","Prone RD (heavy)"],
+      ["Rear Delt DB Fly",       "Cable Reverse Fly",     "Rear Delt Machine"],
     ], p, b);
     const tri3 = pick([
-      ["EZ-Bar Skull Crusher",      "Close-Grip Bench Press","Overhead Cable Ext."],
-      ["Skull Crusher (2-sec ecc)", "CG Bench (pause)",      "Cable OH (slow)"],
-      ["Skull Crusher (drop set)",  "CG Bench (rest-pause)", "Cable OH (1.5-rep)"],
-      ["Skull Crusher (heavy)",     "Weighted Dip",          "JM Press"],
-      ["EZ-Bar Skull Crusher",      "Close-Grip Bench",      "Overhead Cable Ext."],
+      ["EZ-Bar Skull Crusher",     "Close-Grip Bench Press","Overhead Cable Ext."],
+      ["Skull Crusher (2-sec ecc)","CG Bench (pause)",      "Cable OH (slow)"],
+      ["Skull Crusher (drop set)", "CG Bench (rest-pause)", "Cable OH (1.5-rep)"],
+      ["Skull Crusher (heavy)",    "Weighted Dip",          "JM Press"],
+      ["EZ-Bar Skull Crusher",     "Close-Grip Bench",      "Overhead Cable Ext."],
     ], p, b);
     return {
       name: "Push B — Shoulder Focus", session: "D",
       warmup: "Band pull-aparts ×20 + rotator cuff ×15ea + lateral raise warm-up 2×15 + face pulls ×15",
-      note: "Shoulder primary — OHP first while fresh. Chest secondary today.",
+      note: "Shoulder primary — all pressing seated. No standing axial load. OHP = seated DB only.",
       exercises: [
         ex(ohpComp,   sr.sets, sr.comp, adv),
         ex(lateral2,  "4",     sr.iso,  p >= 3 ? t : ""),
-        ex(frontDelt, "3",     "12-15", "Controlled — no swinging"),
+        ex(frontDelt, "3",     "12-15", "Seated — controlled, no swinging"),
         ex(chestComp2,"4",     sr.comp, adv),
         ex(rearDelt2, "4",     "15-20", p >= 3 ? t : "Scaps back and down"),
         ex("Cable Face Pull (rope)", "4", "15-20", "Every push session — shoulder health"),
@@ -326,57 +331,57 @@ function getWorkout(session, weekNum) {
   // ── SESSION E: Pull B — Back Thickness + Arm Specialization ──────────────
   if (session === "E") {
     const rowComp2 = pick([
-      ["Single-Arm DB Row",         "Chest-Supported Row",       "Meadows Row"],
-      ["Single-Arm DB Row (slow)",  "Helms Row",                 "DB Seal Row"],
-      ["SA Row (rest-pause)",       "Gorilla Row",               "Inverted Row (weighted)"],
-      ["Meadows Row (heavy)",       "SA DB Row (heavy)",         "CS Row (slow)"],
-      ["Single-Arm DB Row",         "Chest-Supported Row",       "Helms Row"],
+      ["Single-Arm DB Row (braced on bench)", "Chest-Supported Row",      "Meadows Row"],
+      ["Single-Arm DB Row (slow)",            "Helms Row",                "DB Seal Row"],
+      ["SA Row (rest-pause)",                 "Gorilla Row",              "Chest-Supported Row (drop)"],
+      ["Meadows Row (heavy)",                 "SA DB Row (heavy)",        "CS Row (slow heavy)"],
+      ["Single-Arm DB Row (braced)",          "Chest-Supported Row",      "Helms Row"],
     ], p, b);
     const rowComp3 = pick([
-      ["Seated Cable Row (wide)",    "Seated Cable Row (close)", "Cable Row (high pulley)"],
-      ["Cable Row (2-sec squeeze)",  "Seated Row (underhand)",   "Cable Row (slow)"],
-      ["Cable Row (rest-pause)",     "Cable Row (drop set)",     "Seated Row (1.5-rep)"],
-      ["Cable Row (heavy)",          "Pendlay Row",              "Seal Row (heavy)"],
-      ["Seated Cable Row",           "Cable Row (high pulley)",  "Chest-Supported Row"],
+      ["Seated Cable Row (wide)",   "Seated Cable Row (close)",  "Cable Row (high pulley)"],
+      ["Cable Row (2-sec squeeze)", "Seated Row (underhand)",    "Cable Row (slow)"],
+      ["Cable Row (rest-pause)",    "Cable Row (drop set)",      "Seated Row (1.5-rep)"],
+      ["Cable Row (heavy)",         "Pendlay Row",               "Seal Row (heavy)"],
+      ["Seated Cable Row",          "Cable Row (high pulley)",   "Chest-Supported Row"],
     ], p, b);
     const pullIso2 = pick([
-      ["Lat Pulldown (neutral)",   "Single-Arm Lat Pulldown", "Cable Pullover"],
-      ["LPD (underhand slow)",     "Single-Arm PD (slow)",   "Cable Pullover (2-sec)"],
-      ["LPD (drop set)",           "Straight-Arm Pulldown",  "Cable Pullover (rest-pause)"],
-      ["LPD (heavy)",              "Weighted Pull-Up",        "Cable Pullover (heavy)"],
-      ["Lat Pulldown (neutral)",   "Single-Arm Pulldown",    "Cable Pullover"],
+      ["Lat Pulldown (neutral)",  "Single-Arm Lat Pulldown", "Cable Pullover"],
+      ["LPD (underhand, slow)",   "Single-Arm PD (slow)",   "Cable Pullover (2-sec)"],
+      ["LPD (drop set)",          "Straight-Arm Pulldown",  "Cable Pullover (rest-pause)"],
+      ["LPD (heavy)",             "Weighted Pull-Up",        "Cable Pullover (heavy)"],
+      ["Lat Pulldown (neutral)",  "Single-Arm Pulldown",    "Cable Pullover"],
     ], p, b);
     const curlSpec1 = pick([
-      ["Incline DB Curl",          "Preacher Curl (EZ)",    "Cable Curl (standing)"],
-      ["Incline DB Curl (slow)",   "Preacher Curl (slow)",  "Bayesian Cable Curl"],
-      ["Incline Curl (rest-pause)","Preacher (drop set)",   "Bayesian (1.5-rep)"],
-      ["Incline Curl (heavy)",     "Preacher (heavy)",      "Barbell Drag Curl"],
-      ["Incline DB Curl",          "Preacher Curl (EZ)",    "Bayesian Cable Curl"],
+      ["Incline DB Curl",          "Preacher Curl (EZ)",   "Cable Curl (standing)"],
+      ["Incline DB Curl (slow)",   "Preacher Curl (slow)", "Bayesian Cable Curl"],
+      ["Incline Curl (rest-pause)","Preacher (drop set)",  "Bayesian (1.5-rep)"],
+      ["Incline Curl (heavy)",     "Preacher (heavy)",     "Barbell Drag Curl"],
+      ["Incline DB Curl",          "Preacher Curl (EZ)",   "Bayesian Cable Curl"],
     ], p, b);
     const curlSpec2 = pick([
-      ["Hammer Curl",            "Cross-Body Hammer Curl", "Rope Hammer Curl"],
-      ["Hammer Curl (slow)",     "Cross-Body (2-sec)",     "Rope Hammer (slow)"],
-      ["Hammer (rest-pause)",    "Cross-Body (drop set)",  "Rope Hammer (1.5-rep)"],
-      ["Hammer Curl (heavy)",    "Cross-Body (heavy)",     "DB Reverse Curl"],
-      ["Hammer Curl",            "Cross-Body Hammer Curl", "Rope Hammer Curl"],
+      ["Hammer Curl",          "Cross-Body Hammer Curl", "Rope Hammer Curl"],
+      ["Hammer Curl (slow)",   "Cross-Body (2-sec)",     "Rope Hammer (slow)"],
+      ["Hammer (rest-pause)",  "Cross-Body (drop set)",  "Rope Hammer (1.5-rep)"],
+      ["Hammer Curl (heavy)",  "Cross-Body (heavy)",     "DB Reverse Curl"],
+      ["Hammer Curl",          "Cross-Body Hammer Curl", "Rope Hammer Curl"],
     ], p, b);
     const curlSpec3 = pick([
-      ["Concentration Curl",       "Spider Curl",          "Machine Curl"],
-      ["Concentration (slow peak)","Spider Curl (slow)",   "Machine Curl (pause)"],
-      ["Concentration (drop set)", "Spider (rest-pause)",  "Machine (1.5-rep)"],
-      ["Concentration (heavy)",    "Spider Curl (heavy)",  "Machine Curl (heavy)"],
-      ["Concentration Curl",       "Spider Curl",          "Machine Curl"],
+      ["Concentration Curl",       "Spider Curl",         "Machine Curl"],
+      ["Concentration (slow peak)","Spider Curl (slow)",  "Machine Curl (pause)"],
+      ["Concentration (drop set)", "Spider (rest-pause)", "Machine (1.5-rep)"],
+      ["Concentration (heavy)",    "Spider Curl (heavy)", "Machine Curl (heavy)"],
+      ["Concentration Curl",       "Spider Curl",         "Machine Curl"],
     ], p, b);
     const triBurn = pick([
-      ["Tricep Pushdown (rope)",   "Pushdown (bar)",        "Single-Arm Pushdown"],
-      ["Pushdown (slow)",          "Pushdown (2-sec ecc)",  "Overhead Ext. (slow)"],
-      ["Pushdown (drop set)",      "Pushdown (rest-pause)", "Single-Arm (1.5-rep)"],
-      ["Pushdown (heavy)",         "Overhead Ext. (heavy)", "Single-Arm (heavy)"],
-      ["Tricep Pushdown (rope)",   "Single-Arm Pushdown",   "Overhead Ext."],
+      ["Tricep Pushdown (rope)",  "Pushdown (bar)",        "Single-Arm Pushdown"],
+      ["Pushdown (slow)",         "Pushdown (2-sec ecc)",  "Overhead Ext. (slow)"],
+      ["Pushdown (drop set)",     "Pushdown (rest-pause)", "Single-Arm (1.5-rep)"],
+      ["Pushdown (heavy)",        "Overhead Ext. (heavy)", "Single-Arm (heavy)"],
+      ["Tricep Pushdown (rope)",  "Single-Arm Pushdown",   "Overhead Ext."],
     ], p, b);
     return {
-      name: "Pull B — Thickness & Arm Specialization", session: "E",
-      warmup: "Face pulls ×20 + band pull-aparts ×20 + dead hangs ×30s + bicep stretch ×30s",
+      name: "Pull B — Thickness & Arms", session: "E",
+      warmup: "Face pulls ×20 + band pull-aparts ×20 + dead hangs ×30s + bicep stretch ×30s each",
       note: "Back thickness via horizontal rows. Then full arm specialization — 3 curl variations + tri finisher.",
       exercises: [
         ex(rowComp2,  sr.sets, sr.comp, adv),
@@ -443,7 +448,7 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ ...S.phaseBanner, borderColor: phase.color }}>
+      <div style={{ ...S.phaseBanner, borderColor: phase.color, background: phase.color + "18" }}>
         <div style={S.phaseBannerRow}>
           <div>
             <div style={{ ...S.phaseLabel, color: phase.color }}>PHASE {phaseNum} · WEEK {currentWeek} OF 52</div>
@@ -454,16 +459,17 @@ export default function App() {
         </div>
       </div>
 
+      {/* Split legend */}
       <div style={S.splitRow}>
         {[
-          { s:"A", label:"Push A", sub:"Chest+Shldr+Tri" },
-          { s:"B", label:"Pull A", sub:"Back+Bi+RD" },
-          { s:"C", label:"Legs",   sub:"Full Lower" },
-          { s:"D", label:"Push B", sub:"Shldr+Chest+Tri" },
-          { s:"E", label:"Pull B", sub:"Rows+Arms" },
+          { s:"A", label:"Push A", sub:"Chest" },
+          { s:"B", label:"Pull A", sub:"Width" },
+          { s:"C", label:"Legs",   sub:"Lower" },
+          { s:"D", label:"Push B", sub:"Shoulders" },
+          { s:"E", label:"Pull B", sub:"Arms" },
         ].map(({ s, label, sub }) => (
           <div key={s} style={S.splitCard}>
-            <div style={{ ...S.splitLetter, color: SESSION_COLORS[s], background: SESSION_COLORS[s]+"18" }}>{s}</div>
+            <div style={{ ...S.splitLetter, color: "#0f1117", background: SESSION_COLORS[s] }}>{s}</div>
             <div style={{ ...S.splitLabel, color: SESSION_COLORS[s] }}>{label}</div>
             <div style={S.splitSub}>{sub}</div>
           </div>
@@ -471,65 +477,68 @@ export default function App() {
       </div>
 
       <div style={S.weekNav}>
-        <button onClick={() => saveWeek(Math.max(1, currentWeek-1))} style={{ ...S.navBtn, borderColor: phase.color+"44" }} disabled={currentWeek===1}>‹</button>
+        <button onClick={() => saveWeek(Math.max(1, currentWeek-1))} style={{ ...S.navBtn, borderColor: phase.color }} disabled={currentWeek===1}>‹</button>
         <div style={S.weekCenter}>
           <div style={S.weekBig}>Week {currentWeek}</div>
           <div style={S.weekSub}>of 52</div>
         </div>
-        <button onClick={() => saveWeek(Math.min(52, currentWeek+1))} style={{ ...S.navBtn, borderColor: phase.color+"44" }} disabled={currentWeek===52}>›</button>
+        <button onClick={() => saveWeek(Math.min(52, currentWeek+1))} style={{ ...S.navBtn, borderColor: phase.color }} disabled={currentWeek===52}>›</button>
       </div>
 
       <div style={S.dayGrid}>
         {weekDays.map(({ label, dow }) => {
-          const session = SESSION_MAP[dow];
+          const session    = SESSION_MAP[dow];
           const isTraining = !!session;
-          const key = `w${currentWeek}_${session}`;
-          const done = completed[key];
-          const color = session ? SESSION_COLORS[session] : "#333";
+          const key        = `w${currentWeek}_${session}`;
+          const done       = completed[key];
+          const color      = session ? SESSION_COLORS[session] : "#333";
           return (
             <div key={dow}
               onClick={() => { if (isTraining) { setActiveDay({ weekNum: currentWeek, session }); setView("workout"); } }}
               style={{ ...S.dayCard,
-                borderColor: done ? color : isTraining ? color+"44" : "#1a1a1f",
-                background:  done ? color+"15" : isTraining ? "#111" : "#0a0a0a",
+                borderColor: done ? color : isTraining ? color + "66" : "#2a2f3a",
+                background:  done ? color + "25" : isTraining ? "#1a1f2e" : "#13171f",
                 cursor: isTraining ? "pointer" : "default",
-                opacity: isTraining ? 1 : 0.35,
               }}>
-              <div style={S.dayLabel}>{label}</div>
+              <div style={{ ...S.dayLabel, color: isTraining ? "#9ca3af" : "#4b5563" }}>{label}</div>
               {isTraining ? (<>
-                <div style={{ ...S.sessionBadge, color, background: color+"18" }}>{session}</div>
-                <div style={{ fontSize:8, color: done ? color : "#555", lineHeight:1.3, textAlign:"center" }}>
+                <div style={{ ...S.sessionBadge, color: "#0f1117", background: SESSION_COLORS[session] }}>{session}</div>
+                <div style={{ fontSize:9, color: done ? color : "#9ca3af", lineHeight:1.3, textAlign:"center", fontWeight:500 }}>
                   {SESSION_LABELS[session].split("·")[0].trim()}
                 </div>
-                {done && <div style={{ color, fontSize:14, fontWeight:700 }}>✓</div>}
-              </>) : <div style={{ fontSize:8, color:"#1e1e1e", letterSpacing:1 }}>REST</div>}
+                {done && <div style={{ color, fontSize:16, fontWeight:800 }}>✓</div>}
+              </>) : <div style={{ fontSize:9, color:"#374151", letterSpacing:1 }}>REST</div>}
             </div>
           );
         })}
       </div>
 
+      {/* Phase progress bar */}
       <div style={S.phaseBar}>
         <div style={S.phaseBarLabel}>PHASE PROGRESS — TAP TO JUMP</div>
         <div style={S.phaseTrack}>
           {PHASES.map((ph, i) => {
-            const wks  = ph.weeks[1] - ph.weeks[0] + 1;
-            const pct  = (wks / 52) * 100;
+            const wks    = ph.weeks[1] - ph.weeks[0] + 1;
+            const pct    = (wks / 52) * 100;
             const active = phaseNum === i + 1;
             const past   = currentWeek > ph.weeks[1];
             return (
               <div key={i} onClick={() => saveWeek(ph.weeks[0])}
+                title={`P${i+1}: ${ph.name} (Wk ${ph.weeks[0]}-${ph.weeks[1]})`}
                 style={{ width:`${pct}%`, height:"100%",
-                  background: past ? ph.color : active ? ph.color+"66" : "#111",
-                  cursor:"pointer", position:"relative", transition:"all 0.3s" }}>
-                {active && <div style={{ position:"absolute", inset:-2, border:`2px solid ${ph.color}`, borderRadius:2 }} />}
+                  background: past ? ph.color : active ? ph.color + "88" : "#1e2330",
+                  cursor:"pointer", position:"relative", transition:"all 0.3s",
+                  borderRadius: i===0 ? "4px 0 0 4px" : i===PHASES.length-1 ? "0 4px 4px 0" : 0 }}>
+                {active && <div style={{ position:"absolute", inset:-2, border:`2px solid ${ph.color}`, borderRadius:4 }} />}
               </div>
             );
           })}
         </div>
-        <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", marginTop:8 }}>
           {PHASES.map((ph, i) => (
             <div key={i} onClick={() => saveWeek(ph.weeks[0])}
-              style={{ fontSize:9, cursor:"pointer", color: phaseNum===i+1 ? ph.color : "#2a2a2f", fontWeight: phaseNum===i+1 ? 700 : 400 }}>
+              style={{ fontSize:11, cursor:"pointer", fontWeight:700,
+                color: phaseNum===i+1 ? ph.color : "#4b5563" }}>
               P{i+1}
             </div>
           ))}
@@ -538,9 +547,9 @@ export default function App() {
 
       <div style={S.statsRow}>
         {[
-          { label:"Sessions Done", val: Object.keys(completed).length, color: phase.color },
-          { label:"Sets Logged",   val: Object.values(weights).reduce((a,b) => a+(Array.isArray(b?.sets) ? b.sets.filter(s=>s?.weight).length : 0), 0), color:"#FF9A3C" },
-          { label:"Weeks Logged",  val: [...new Set(Object.keys(completed).map(k=>k.split("_")[0]))].length, color:"#4FACFE" },
+          { label:"Sessions Done", val: Object.keys(completed).length,                  color: phase.color },
+          { label:"Sets Logged",   val: Object.values(weights).reduce((a,b) => a+(Array.isArray(b?.sets) ? b.sets.filter(s=>s?.weight).length : 0), 0), color:"#FB923C" },
+          { label:"Weeks Logged",  val: [...new Set(Object.keys(completed).map(k=>k.split("_")[0]))].length, color:"#60A5FA" },
         ].map(({ label, val, color }) => (
           <div key={label} style={S.statCard}>
             <div style={{ ...S.statVal, color }}>{val}</div>
@@ -579,52 +588,60 @@ function WorkoutView({ weekNum, session, weights, onSaveWeights, onComplete, com
 
   return (
     <div style={S.app}>
+      {/* Sticky header with safe area inset */}
       <div style={{ ...S.workoutHeader, borderBottomColor: color }}>
         <button onClick={onBack} style={S.backBtn}>← Back</button>
         <div style={{ flex:1, textAlign:"center" }}>
-          <div style={{ fontSize:9, letterSpacing:3, color, fontWeight:700 }}>WEEK {weekNum} · SESSION {session}</div>
-          <div style={{ fontSize:15, fontWeight:700, color:"#fff" }}>{workout.name}</div>
-          <div style={{ fontSize:10, color:"#444", marginTop:2 }}>Phase {phaseNum}: {phase.name}</div>
+          <div style={{ fontSize:11, letterSpacing:3, color, fontWeight:700, marginBottom:2 }}>WEEK {weekNum} · SESSION {session}</div>
+          <div style={{ fontSize:17, fontWeight:800, color:"#f9fafb" }}>{workout.name}</div>
+          <div style={{ fontSize:12, color:"#6b7280", marginTop:2 }}>Phase {phaseNum}: {phase.name}</div>
         </div>
         {!isDone
           ? <button onClick={() => onComplete(key)} style={{ ...S.completeBtn, background: color }}>Done ✓</button>
-          : <div style={{ color, fontSize:13, fontWeight:700, whiteSpace:"nowrap" }}>✓ Done</div>}
+          : <div style={{ color, fontSize:14, fontWeight:800, whiteSpace:"nowrap" }}>✓ Done</div>}
       </div>
 
-      {deload && <div style={S.deloadAlert}>🔄 DELOAD — Use 60-70% load. Same reps. Full ROM. Recovery focus.</div>}
+      {deload && (
+        <div style={S.deloadAlert}>
+          🔄 DELOAD WEEK — Use 60-70% of your normal load. Same reps. Focus on form and recovery.
+        </div>
+      )}
 
-      <div style={{ borderLeft:`2px solid ${color}44`, padding:"8px 16px", background:"#0a0a0b" }}>
-        <span style={{ fontSize:9, letterSpacing:2, fontWeight:700, color }}> EMPHASIS  </span>
-        <span style={{ fontSize:11, color:"#666" }}>{workout.note}</span>
+      {/* Emphasis note */}
+      <div style={{ borderLeft:`3px solid ${color}`, padding:"10px 16px", background:"#1a1f2e", margin:"0" }}>
+        <div style={{ fontSize:10, letterSpacing:2, fontWeight:700, color, marginBottom:4 }}>EMPHASIS</div>
+        <div style={{ fontSize:13, color:"#d1d5db", lineHeight:1.5 }}>{workout.note}</div>
       </div>
 
+      {/* Warmup */}
       <div style={S.warmupBar}>
-        <span style={S.warmupLabel}>WARM-UP</span>
-        <span style={S.warmupText}>{workout.warmup}</span>
+        <div style={S.warmupLabel}>WARM-UP</div>
+        <div style={S.warmupText}>{workout.warmup}</div>
       </div>
 
+      {/* Exercise list */}
       <div style={S.exList}>
-        {workout.exercises.map((ex, ei) => (
-          <div key={ei} style={{ ...S.exCard, borderColor: isBW(ex.exercise) ? "#111" : "#1a1a1f" }}>
+        {workout.exercises.map((exItem, ei) => (
+          <div key={ei} style={{ ...S.exCard, borderColor: isBW(exItem.exercise) ? "#2a2f3a" : "#2a2f3a" }}>
             <div style={S.exHeader}>
-              <div style={{ ...S.exNum, background: color+"20", color }}>{ei + 1}</div>
+              <div style={{ ...S.exNum, background: color, color:"#0f1117" }}>{ei + 1}</div>
               <div style={{ flex:1 }}>
-                <div style={S.exName}>{ex.exercise}</div>
+                <div style={S.exName}>{exItem.exercise}</div>
                 <div style={S.exMeta}>
-                  <span style={{ ...S.pill, borderColor: color+"44" }}>{ex.sets} sets</span>
-                  <span style={{ ...S.pill, borderColor: color+"44" }}>{ex.reps} reps</span>
-                  {ex.notes && <span style={S.techPill}>{ex.notes}</span>}
+                  <span style={{ ...S.pill, borderColor: color, color:"#e5e7eb" }}>{exItem.sets} sets</span>
+                  <span style={{ ...S.pill, borderColor: color, color:"#e5e7eb" }}>{exItem.reps} reps</span>
+                  {exItem.notes && <span style={S.techPill}>{exItem.notes}</span>}
                 </div>
               </div>
             </div>
-            {!isBW(ex.exercise) ? (
+            {!isBW(exItem.exercise) ? (
               <div style={S.setsGrid}>
                 <div style={S.setsHead}>
                   <span style={S.setHdr}>SET</span>
                   <span style={S.setHdr}>WEIGHT (lbs)</span>
                   <span style={S.setHdr}>REPS DONE</span>
                 </div>
-                {Array.from({ length: nSets(ex.sets) }).map((_, si) => {
+                {Array.from({ length: nSets(exItem.sets) }).map((_, si) => {
                   const sd = getSD(ei, si);
                   return (
                     <div key={si} style={S.setRow}>
@@ -632,7 +649,7 @@ function WorkoutView({ weekNum, session, weights, onSaveWeights, onComplete, com
                       <input type="number" placeholder="lbs" value={sd.weight}
                         onChange={e => updateSet(ei, si, "weight", e.target.value)}
                         style={S.wInput} inputMode="decimal" />
-                      <input type="number" placeholder={ex.reps} value={sd.reps}
+                      <input type="number" placeholder={exItem.reps} value={sd.reps}
                         onChange={e => updateSet(ei, si, "reps", e.target.value)}
                         style={S.rInput} inputMode="decimal" />
                     </div>
@@ -664,12 +681,9 @@ function ProgressView({ weights, completed, onBack, currentWeek }) {
   Object.entries(weights).forEach(([key, data]) => {
     const parts = key.split("_");
     if (parts.length < 3) return;
-    const wk = parseInt(parts[0].replace("w",""));
-    const sess = parts[1];
-    const ei   = parseInt(parts[2]);
     try {
-      const wo = getWorkout(sess, wk);
-      const e  = wo?.exercises?.[ei];
+      const wo = getWorkout(parts[1], parseInt(parts[0].replace("w","")));
+      const e  = wo?.exercises?.[parseInt(parts[2])];
       if (!e) return;
       data.sets?.forEach(s => {
         if (!s?.weight) return;
@@ -685,59 +699,59 @@ function ProgressView({ weights, completed, onBack, currentWeek }) {
       <div style={{ ...S.workoutHeader, borderBottomColor: topPhase.color }}>
         <button onClick={onBack} style={S.backBtn}>← Back</button>
         <div style={{ flex:1, textAlign:"center" }}>
-          <div style={{ fontSize:9, letterSpacing:3, color: topPhase.color, fontWeight:700 }}>YOUR PROGRESS</div>
-          <div style={{ fontSize:17, fontWeight:700, color:"#fff" }}>Stats & PRs</div>
+          <div style={{ fontSize:11, letterSpacing:3, color: topPhase.color, fontWeight:700 }}>YOUR PROGRESS</div>
+          <div style={{ fontSize:18, fontWeight:800, color:"#f9fafb" }}>Stats & PRs</div>
         </div>
-        <div style={{ width:50 }} />
+        <div style={{ width:70 }} />
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, padding:"16px 12px 8px" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, padding:"16px 14px 8px" }}>
         {[
-          { label:"Sessions",    val:totalSessions, color:"#00C9A7" },
-          { label:"Sets Logged", val:totalSets,     color:"#FF9A3C" },
-          { label:"Weeks Done",  val:weeksLogged,   color:"#4FACFE" },
+          { label:"Sessions",    val:totalSessions, color:"#34D399" },
+          { label:"Sets Logged", val:totalSets,     color:"#FB923C" },
+          { label:"Weeks Done",  val:weeksLogged,   color:"#60A5FA" },
         ].map(({ label, val, color }) => (
-          <div key={label} style={{ background:"#0f0f12", border:"1px solid #1a1a1f", borderRadius:12, padding:"14px 8px", textAlign:"center" }}>
-            <div style={{ fontSize:24, fontWeight:700, color }}>{val}</div>
-            <div style={{ fontSize:9, color:"#444", letterSpacing:1, marginTop:3 }}>{label}</div>
+          <div key={label} style={S.statCard}>
+            <div style={{ ...S.statVal, color }}>{val}</div>
+            <div style={S.statLabel}>{label}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ padding:"8px 16px 4px", fontSize:9, color:"#333", letterSpacing:2 }}>SESSIONS BY TYPE</div>
-      <div style={{ padding:"0 12px 16px", display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:6 }}>
+      <div style={S.sectionTitle}>SESSIONS BY TYPE</div>
+      <div style={{ padding:"0 14px 16px", display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:8 }}>
         {["A","B","C","D","E"].map(s => {
           const count = Object.keys(completed).filter(k => k.includes(`_${s}`)).length;
           const color = SESSION_COLORS[s];
           return (
-            <div key={s} style={{ background:"#0f0f12", border:`1px solid ${color}22`, borderRadius:10, padding:"10px 6px", textAlign:"center" }}>
-              <div style={{ fontSize:18, fontWeight:700, color }}>{count}</div>
-              <div style={{ fontSize:9, color, letterSpacing:1, marginTop:2 }}>{s}</div>
+            <div key={s} style={{ background:"#1a1f2e", border:`2px solid ${color}44`, borderRadius:12, padding:"12px 6px", textAlign:"center" }}>
+              <div style={{ fontSize:22, fontWeight:800, color }}>{count}</div>
+              <div style={{ fontSize:11, color, fontWeight:700, marginTop:2 }}>{s}</div>
             </div>
           );
         })}
       </div>
 
-      <div style={{ padding:"0 16px 8px", fontSize:9, color:"#333", letterSpacing:2 }}>TOP WEIGHTS LOGGED</div>
+      <div style={S.sectionTitle}>TOP WEIGHTS LOGGED</div>
       {prList.length === 0
-        ? <div style={{ textAlign:"center", color:"#2a2a2f", padding:"30px 0", fontSize:13 }}>No weights logged yet — start a session!</div>
-        : <div style={{ padding:"0 12px", display:"flex", flexDirection:"column", gap:6 }}>
+        ? <div style={{ textAlign:"center", color:"#4b5563", padding:"30px 0", fontSize:15 }}>No weights logged yet — start a session!</div>
+        : <div style={{ padding:"0 14px", display:"flex", flexDirection:"column", gap:8 }}>
             {prList.map(([name, w], i) => {
-              const colors = ["#FF6B6B","#4FACFE","#00C9A7","#F7971E","#C471ED"];
+              const colors = ["#F87171","#60A5FA","#34D399","#FB923C","#A78BFA"];
               const c = colors[i % colors.length];
               return (
-                <div key={name} style={{ display:"flex", alignItems:"center", gap:12, background:"#0f0f12", border:`1px solid ${c}22`, borderRadius:10, padding:"10px 14px" }}>
-                  <div style={{ fontSize:11, color:"#333", width:20, textAlign:"right" }}>{i+1}</div>
-                  <div style={{ flex:1, fontSize:13, color:"#ddd" }}>{name}</div>
-                  <div style={{ fontSize:16, fontWeight:700, color: c }}>{w} <span style={{ color:"#333", fontSize:11 }}>lbs</span></div>
+                <div key={name} style={{ display:"flex", alignItems:"center", gap:12, background:"#1a1f2e", border:`1px solid ${c}33`, borderLeft:`4px solid ${c}`, borderRadius:"0 10px 10px 0", padding:"12px 14px" }}>
+                  <div style={{ fontSize:13, color:"#6b7280", width:22, textAlign:"right", fontWeight:600 }}>{i+1}</div>
+                  <div style={{ flex:1, fontSize:14, color:"#e5e7eb", fontWeight:500 }}>{name}</div>
+                  <div style={{ fontSize:18, fontWeight:800, color: c }}>{w} <span style={{ color:"#6b7280", fontSize:12, fontWeight:400 }}>lbs</span></div>
                 </div>
               );
             })}
           </div>
       }
 
-      <div style={{ padding:"16px 16px 8px", fontSize:9, color:"#333", letterSpacing:2 }}>PHASE COMPLETION</div>
-      <div style={{ padding:"0 12px 40px", display:"flex", flexDirection:"column", gap:8 }}>
+      <div style={{ ...S.sectionTitle, marginTop:16 }}>PHASE COMPLETION</div>
+      <div style={{ padding:"0 14px 60px", display:"flex", flexDirection:"column", gap:10 }}>
         {PHASES.map((ph, i) => {
           const sessInPhase = Object.keys(completed).filter(k => {
             const wk = parseInt(k.split("_")[0].replace("w",""));
@@ -746,19 +760,19 @@ function ProgressView({ weights, completed, onBack, currentWeek }) {
           const maxSess = (ph.weeks[1] - ph.weeks[0] + 1) * 5;
           const pct = Math.min(100, Math.round((sessInPhase / maxSess) * 100));
           return (
-            <div key={i} style={{ background:"#0f0f12", border:"1px solid #1a1a1f", borderRadius:10, padding:"12px 14px" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+            <div key={i} style={{ background:"#1a1f2e", border:`1px solid ${ph.color}33`, borderRadius:12, padding:"14px 16px" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                 <div>
-                  <div style={{ fontSize:9, color:"#2a2a2f", letterSpacing:2 }}>PHASE {i+1}</div>
-                  <div style={{ fontSize:14, fontWeight:700, color: ph.color }}>{ph.name}</div>
-                  <div style={{ fontSize:10, color:"#333", marginTop:2 }}>Wk {ph.weeks[0]}–{ph.weeks[1]}</div>
+                  <div style={{ fontSize:10, color:"#6b7280", letterSpacing:2, fontWeight:600 }}>PHASE {i+1}</div>
+                  <div style={{ fontSize:16, fontWeight:700, color: ph.color, marginTop:2 }}>{ph.name}</div>
+                  <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>Weeks {ph.weeks[0]}–{ph.weeks[1]}</div>
                 </div>
-                <div style={{ fontSize:20, fontWeight:700, color: ph.color }}>{pct}%</div>
+                <div style={{ fontSize:26, fontWeight:800, color: ph.color }}>{pct}%</div>
               </div>
-              <div style={{ height:4, background:"#111", borderRadius:2 }}>
-                <div style={{ width:`${pct}%`, height:"100%", background: ph.color, borderRadius:2, transition:"width 0.5s" }} />
+              <div style={{ height:6, background:"#0f1117", borderRadius:4 }}>
+                <div style={{ width:`${pct}%`, height:"100%", background: ph.color, borderRadius:4, transition:"width 0.5s" }} />
               </div>
-              <div style={{ fontSize:10, color:"#2a2a2f", marginTop:4 }}>{sessInPhase} / {maxSess} sessions completed</div>
+              <div style={{ fontSize:11, color:"#6b7280", marginTop:6 }}>{sessInPhase} / {maxSess} sessions completed</div>
             </div>
           );
         })}
@@ -767,65 +781,66 @@ function ProgressView({ weights, completed, onBack, currentWeek }) {
   );
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
+// ─── STYLES — brighter, more readable ─────────────────────────────────────────
 const S = {
-  app:          { background:"#080809", minHeight:"100vh", color:"#e8e8e8", fontFamily:"'DM Mono','Fira Code','Courier New',monospace", maxWidth:520, margin:"0 auto", paddingBottom:60 },
-  header:       { padding:"18px 16px 14px", borderBottom:"1px solid #111" },
-  headerRow:    { display:"flex", justifyContent:"space-between", alignItems:"center" },
-  logo:         { fontSize:20, fontWeight:700, letterSpacing:3, color:"#fff" },
-  sublogo:      { fontSize:9, color:"#2a2a2f", letterSpacing:2, marginTop:3 },
-  progressBtn:  { background:"#0f0f12", border:"1px solid #1a1a1f", color:"#555", padding:"8px 12px", borderRadius:8, cursor:"pointer", fontSize:13, fontFamily:"inherit" },
-  phaseBanner:  { margin:"12px 14px 8px", padding:"12px 16px", borderLeft:"3px solid", background:"#0c0c0e", borderRadius:"0 10px 10px 0" },
+  app:           { background:"#0f1117", minHeight:"100vh", color:"#f9fafb", fontFamily:"'Inter', -apple-system, BlinkMacSystemFont, sans-serif", maxWidth:520, margin:"0 auto", paddingBottom:60 },
+  header:        { padding:"20px 16px 16px", borderBottom:"1px solid #1e2330", background:"#0f1117" },
+  headerRow:     { display:"flex", justifyContent:"space-between", alignItems:"center" },
+  logo:          { fontSize:22, fontWeight:800, letterSpacing:2, color:"#f9fafb" },
+  sublogo:       { fontSize:11, color:"#6b7280", letterSpacing:1, marginTop:3, fontWeight:500 },
+  progressBtn:   { background:"#1a1f2e", border:"1px solid #374151", color:"#d1d5db", padding:"10px 14px", borderRadius:10, cursor:"pointer", fontSize:14, fontFamily:"inherit", fontWeight:600 },
+  phaseBanner:   { margin:"12px 14px 8px", padding:"14px 16px", borderLeft:"4px solid", borderRadius:"0 12px 12px 0" },
   phaseBannerRow:{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8 },
-  phaseLabel:   { fontSize:9, letterSpacing:3, fontWeight:700, marginBottom:3 },
-  phaseName:    { fontSize:17, fontWeight:700, color:"#fff", marginBottom:3 },
-  phaseFocus:   { fontSize:10, color:"#444", lineHeight:1.5 },
-  deloadBadge:  { background:"#0f0800", border:"1px solid #F7971E44", color:"#F7971E", padding:"5px 12px", borderRadius:20, fontSize:10, fontWeight:700, letterSpacing:1 },
-  splitRow:     { display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:4, padding:"8px 10px" },
-  splitCard:    { background:"#0c0c0e", borderRadius:8, padding:"8px 4px", textAlign:"center" },
-  splitLetter:  { fontSize:15, fontWeight:700, borderRadius:4, padding:"2px 6px", margin:"0 auto 4px", width:"fit-content" },
-  splitLabel:   { fontSize:9, fontWeight:700, letterSpacing:1 },
-  splitSub:     { fontSize:8, color:"#2a2a2f", marginTop:2, lineHeight:1.3 },
-  weekNav:      { display:"flex", alignItems:"center", justifyContent:"center", gap:24, padding:"12px 20px" },
-  navBtn:       { background:"#0f0f12", border:"1px solid", color:"#fff", width:36, height:36, borderRadius:"50%", cursor:"pointer", fontSize:18, fontFamily:"inherit" },
-  weekCenter:   { textAlign:"center" },
-  weekBig:      { fontSize:22, fontWeight:700, color:"#fff" },
-  weekSub:      { fontSize:12, color:"#2a2a2f" },
-  dayGrid:      { display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:5, padding:"0 10px 12px" },
-  dayCard:      { border:"1px solid", borderRadius:10, padding:"8px 4px", textAlign:"center", transition:"all 0.15s", minHeight:86, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3 },
-  dayLabel:     { fontSize:8, letterSpacing:1, color:"#2a2a2f", fontWeight:700 },
-  sessionBadge: { fontSize:14, fontWeight:700, padding:"2px 7px", borderRadius:5, letterSpacing:1 },
-  phaseBar:     { padding:"0 14px 14px" },
-  phaseBarLabel:{ fontSize:9, color:"#2a2a2f", letterSpacing:2, marginBottom:7 },
-  phaseTrack:   { display:"flex", height:6, borderRadius:3, overflow:"hidden", gap:2 },
-  statsRow:     { display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, padding:"0 12px" },
-  statCard:     { background:"#0f0f12", border:"1px solid #1a1a1f", borderRadius:12, padding:"12px 8px", textAlign:"center" },
-  statVal:      { fontSize:24, fontWeight:700 },
-  statLabel:    { fontSize:9, color:"#333", letterSpacing:1, marginTop:2 },
-  workoutHeader:{ display:"flex", alignItems:"center", gap:10, paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)", paddingBottom:"14px", paddingLeft:"14px", paddingRight:"14px", borderBottom:"1px solid", position:"sticky", top:0, background:"#080809", zIndex:10 },
-  backBtn:      { background:"none", border:"none", color:"#555", cursor:"pointer", fontSize:14, padding:"6px 0", fontFamily:"inherit" },
-  completeBtn:  { border:"none", color:"#000", fontWeight:700, padding:"8px 12px", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", whiteSpace:"nowrap" },
-  deloadAlert:  { background:"#0f0800", borderLeft:"3px solid #F7971E", color:"#F7971E", padding:"10px 16px", fontSize:12, lineHeight:1.6 },
-  warmupBar:    { background:"#0c0c0e", padding:"10px 16px", display:"flex", gap:10, alignItems:"flex-start" },
-  warmupLabel:  { fontSize:9, color:"#2a2a2f", letterSpacing:2, fontWeight:700, whiteSpace:"nowrap", paddingTop:1 },
-  warmupText:   { fontSize:11, color:"#555", lineHeight:1.6 },
-  exList:       { padding:"8px 12px", display:"flex", flexDirection:"column", gap:8 },
-  exCard:       { background:"#0c0c0e", border:"1px solid", borderRadius:10, overflow:"hidden" },
-  exHeader:     { display:"flex", gap:10, padding:"11px 12px 7px", alignItems:"flex-start" },
-  exNum:        { width:26, height:26, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, flexShrink:0, marginTop:2 },
-  exName:       { fontSize:13, fontWeight:700, color:"#f0f0f0", marginBottom:5, lineHeight:1.3 },
-  exMeta:       { display:"flex", gap:5, flexWrap:"wrap" },
-  pill:         { border:"1px solid", borderRadius:4, padding:"2px 6px", fontSize:10, color:"#555" },
-  techPill:     { background:"#0f0a00", border:"1px solid #F7971E33", borderRadius:4, padding:"2px 6px", fontSize:10, color:"#F7971E" },
-  setsGrid:     { padding:"0 12px 10px" },
-  setsHead:     { display:"grid", gridTemplateColumns:"26px 1fr 1fr", gap:6, marginBottom:4 },
-  setHdr:       { fontSize:9, color:"#2a2a2f", letterSpacing:1 },
-  setRow:       { display:"grid", gridTemplateColumns:"26px 1fr 1fr", gap:6, marginBottom:5, alignItems:"center" },
-  setNum:       { fontSize:12, fontWeight:700, textAlign:"center" },
-  wInput:       { background:"#080809", border:"1px solid #1a1a1f", borderRadius:6, padding:"8px 6px", color:"#fff", fontSize:16, fontFamily:"inherit", width:"100%", boxSizing:"border-box", textAlign:"center" },
-  rInput:       { background:"#080809", border:"1px solid #1a1a1f", borderRadius:6, padding:"8px 6px", color:"#666", fontSize:16, fontFamily:"inherit", width:"100%", boxSizing:"border-box", textAlign:"center" },
-  bwNote:       { padding:"4px 12px 10px", fontSize:11, color:"#2a2a2f", fontStyle:"italic" },
-  noteBox:      { padding:"12px 16px" },
-  noteLabel:    { fontSize:9, color:"#2a2a2f", letterSpacing:2, marginBottom:7 },
-  noteInput:    { width:"100%", background:"#0c0c0e", border:"1px solid #1a1a1f", borderRadius:8, padding:12, color:"#666", fontSize:13, fontFamily:"inherit", resize:"vertical", minHeight:80, boxSizing:"border-box" },
+  phaseLabel:    { fontSize:11, letterSpacing:2, fontWeight:700, marginBottom:4 },
+  phaseName:     { fontSize:19, fontWeight:800, color:"#f9fafb", marginBottom:4 },
+  phaseFocus:    { fontSize:12, color:"#9ca3af", lineHeight:1.5 },
+  deloadBadge:   { background:"#1c1207", border:"2px solid #FB923C66", color:"#FB923C", padding:"6px 14px", borderRadius:20, fontSize:11, fontWeight:700 },
+  splitRow:      { display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:6, padding:"8px 12px" },
+  splitCard:     { background:"#1a1f2e", borderRadius:10, padding:"10px 4px", textAlign:"center" },
+  splitLetter:   { fontSize:16, fontWeight:800, borderRadius:6, padding:"3px 8px", margin:"0 auto 5px", width:"fit-content" },
+  splitLabel:    { fontSize:10, fontWeight:700, letterSpacing:0.5 },
+  splitSub:      { fontSize:9, color:"#6b7280", marginTop:2, lineHeight:1.3 },
+  weekNav:       { display:"flex", alignItems:"center", justifyContent:"center", gap:28, padding:"14px 20px" },
+  navBtn:        { background:"#1a1f2e", border:"2px solid", color:"#f9fafb", width:42, height:42, borderRadius:"50%", cursor:"pointer", fontSize:20, fontFamily:"inherit", fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center" },
+  weekCenter:    { textAlign:"center" },
+  weekBig:       { fontSize:26, fontWeight:800, color:"#f9fafb" },
+  weekSub:       { fontSize:13, color:"#6b7280", fontWeight:500 },
+  dayGrid:       { display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6, padding:"0 12px 14px" },
+  dayCard:       { border:"2px solid", borderRadius:12, padding:"10px 4px", textAlign:"center", transition:"all 0.15s", minHeight:92, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:4 },
+  dayLabel:      { fontSize:9, letterSpacing:1, fontWeight:700 },
+  sessionBadge:  { fontSize:15, fontWeight:800, padding:"3px 9px", borderRadius:6, letterSpacing:0.5 },
+  phaseBar:      { padding:"0 14px 16px" },
+  phaseBarLabel: { fontSize:10, color:"#6b7280", letterSpacing:2, marginBottom:8, fontWeight:600 },
+  phaseTrack:    { display:"flex", height:8, borderRadius:4, overflow:"hidden", gap:2 },
+  statsRow:      { display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, padding:"0 14px" },
+  statCard:      { background:"#1a1f2e", border:"1px solid #2a2f3a", borderRadius:14, padding:"16px 10px", textAlign:"center" },
+  statVal:       { fontSize:28, fontWeight:800 },
+  statLabel:     { fontSize:10, color:"#6b7280", letterSpacing:1, marginTop:4, fontWeight:600 },
+  sectionTitle:  { fontSize:11, color:"#6b7280", letterSpacing:2, padding:"16px 16px 8px", fontWeight:700 },
+  workoutHeader: { display:"flex", alignItems:"center", gap:10, paddingTop:"calc(env(safe-area-inset-top, 0px) + 14px)", paddingBottom:"14px", paddingLeft:"16px", paddingRight:"16px", borderBottom:"2px solid", position:"sticky", top:0, background:"#0f1117", zIndex:10 },
+  backBtn:       { background:"#1a1f2e", border:"1px solid #374151", color:"#d1d5db", cursor:"pointer", fontSize:14, padding:"8px 14px", borderRadius:8, fontFamily:"inherit", fontWeight:600, whiteSpace:"nowrap" },
+  completeBtn:   { border:"none", color:"#0f1117", fontWeight:800, padding:"10px 14px", borderRadius:10, cursor:"pointer", fontSize:13, fontFamily:"inherit", whiteSpace:"nowrap" },
+  deloadAlert:   { background:"#1c1207", borderLeft:"4px solid #FB923C", color:"#FB923C", padding:"12px 16px", fontSize:13, lineHeight:1.6, fontWeight:500 },
+  warmupBar:     { background:"#1a1f2e", padding:"12px 16px", borderBottom:"1px solid #2a2f3a" },
+  warmupLabel:   { fontSize:10, color:"#6b7280", letterSpacing:2, fontWeight:700, marginBottom:6 },
+  warmupText:    { fontSize:13, color:"#d1d5db", lineHeight:1.6 },
+  exList:        { padding:"10px 12px", display:"flex", flexDirection:"column", gap:10 },
+  exCard:        { background:"#1a1f2e", border:"1px solid #2a2f3a", borderRadius:14, overflow:"hidden" },
+  exHeader:      { display:"flex", gap:12, padding:"14px 14px 10px", alignItems:"flex-start" },
+  exNum:         { width:30, height:30, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, flexShrink:0, marginTop:2 },
+  exName:        { fontSize:15, fontWeight:700, color:"#f9fafb", marginBottom:8, lineHeight:1.3 },
+  exMeta:        { display:"flex", gap:6, flexWrap:"wrap" },
+  pill:          { border:"1px solid", borderRadius:6, padding:"3px 9px", fontSize:11, fontWeight:600 },
+  techPill:      { background:"#1c1207", border:"1px solid #FB923C55", borderRadius:6, padding:"3px 9px", fontSize:11, color:"#FB923C", fontWeight:600 },
+  setsGrid:      { padding:"0 14px 14px" },
+  setsHead:      { display:"grid", gridTemplateColumns:"28px 1fr 1fr", gap:8, marginBottom:6 },
+  setHdr:        { fontSize:10, color:"#6b7280", letterSpacing:1, fontWeight:600 },
+  setRow:        { display:"grid", gridTemplateColumns:"28px 1fr 1fr", gap:8, marginBottom:8, alignItems:"center" },
+  setNum:        { fontSize:14, fontWeight:800, textAlign:"center" },
+  wInput:        { background:"#0f1117", border:"2px solid #2a2f3a", borderRadius:8, padding:"10px 8px", color:"#f9fafb", fontSize:17, fontFamily:"inherit", width:"100%", boxSizing:"border-box", textAlign:"center", fontWeight:600 },
+  rInput:        { background:"#0f1117", border:"2px solid #2a2f3a", borderRadius:8, padding:"10px 8px", color:"#9ca3af", fontSize:17, fontFamily:"inherit", width:"100%", boxSizing:"border-box", textAlign:"center", fontWeight:600 },
+  bwNote:        { padding:"6px 14px 14px", fontSize:12, color:"#6b7280", fontStyle:"italic" },
+  noteBox:       { padding:"14px 16px" },
+  noteLabel:     { fontSize:10, color:"#6b7280", letterSpacing:2, marginBottom:8, fontWeight:700 },
+  noteInput:     { width:"100%", background:"#1a1f2e", border:"2px solid #2a2f3a", borderRadius:10, padding:14, color:"#d1d5db", fontSize:14, fontFamily:"inherit", resize:"vertical", minHeight:90, boxSizing:"border-box" },
 };
