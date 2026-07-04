@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 // ─── HYPERTROPHY 365 V2 ───────────────────────────────────────────────────────
 // 5-DAY PPL SPLIT — Low-Back Safe, No Spinal Compression
@@ -253,7 +253,7 @@ function getWorkout(session, weekNum) {
     return {
       name: "Legs — Quad / Ham / Glute / Calf", session: "C",
       warmup: "10 min bike + hip flexor stretch ×60s + banded glute bridges ×20 + leg swings ×10 each",
-      note: "NO spinal compression — leg press and hack squat replace barbell squat. RDL is hip hinge (safe). Go heavy on everything else.",
+      note: "NO spinal compression — leg press and hack squat replace barbell squat. RDL is hip hinge (safe). Core block at end builds anti-rotation strength for disc health.",
       exercises: [
         ex(quadComp,  sr.sets, sr.comp, adv),
         ex(splitSquat,"4",     sr.comp, "DB only — no barbell on back"),
@@ -263,6 +263,10 @@ function getWorkout(session, weekNum) {
         ex(legExt,    "4",     sr.iso,  p >= 3 ? t : ""),
         ex("Seated Calf Raise",   "4", "12-15", "Full ROM — 3-sec eccentric, pause at stretch"),
         ex("Standing Calf Raise", "3", "15-20", "Single-leg if possible"),
+        ex("Pallof Press (cable/band)", "3", "10-12 ea", "CORE · ANTI-ROTATION — resist the twist, ribs down, brace hard. Builds disc stability."),
+        ex("Half-Kneeling Cable Chop",  "3", "10-12 ea", "CORE · Controlled rotation from the T-SPINE, not lumbar. Hips stay square."),
+        ex("Bird Dog",                  "3", "8-10 ea",  "CORE · Anti-extension + stability. Reach opposite arm/leg, no lower-back arch."),
+        ex("Dead Bug (add DB optional)","3", "10 ea",    "CORE · Exhale fully, flatten low back into floor the entire set."),
       ]
     };
   }
@@ -403,6 +407,179 @@ const LS = {
   set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
+// ─── PROGRESSIVE LOAD SUGGESTION ──────────────────────────────────────────────
+// Scans all past logged data for the SAME base movement (ignoring rotation
+// modifiers like "(drop set)", "(heavy)", "(2-sec)"), finds the most recent
+// week it was logged, and suggests the next working weight.
+function baseMovement(name) {
+  let s = String(name).replace(/\([^)]*\)/g, " ").toLowerCase();
+  s = s.replace(/\bbb\b/g, "barbell").replace(/\bdb\b/g, "dumbbell");
+  s = s.replace(/\b(heavy|slow|paused|pause|tempo|drop\s*set|drop|rest-pause|restpause|mechanical|mech|triple|double|1\.5-rep|21s|eccentric|ecc|deficit|hold|explosive|max|light)\b/gi, " ");
+  s = s.replace(/\b\d+(\.\d+)?[- ]?(sec|rep|reps|s)\b/gi, " ");
+  s = s.replace(/[-]/g, " ").replace(/\s+/g, " ").trim();
+  return s;
+}
+function parseRepTarget(repStr) {
+  // "10-12" -> {low:10, high:12}; "8" -> {low:8, high:8}
+  const m = String(repStr).match(/(\d+)\s*-\s*(\d+)/);
+  if (m) return { low: parseInt(m[1]), high: parseInt(m[2]) };
+  const s = String(repStr).match(/(\d+)/);
+  return s ? { low: parseInt(s[1]), high: parseInt(s[1]) } : { low: 8, high: 12 };
+}
+
+// Compound movements jump in bigger increments than isolation
+function isCompoundLift(name) {
+  return /Bench|Squat|Press|Row|Deadlift|RDL|Pull-Up|Chin-Up|Pulldown|Hip Thrust|Leg Press|Hack|Dip|Lunge|Split Squat|Landmine/i.test(name);
+}
+
+// Look back through weeks for the last time this exercise was logged with weight
+function findLastPerformance(allWeights, exerciseName, currentWeek, sessionsGetter) {
+  const targetBase = baseMovement(exerciseName);
+  for (let wk = currentWeek - 1; wk >= 1; wk--) {
+    for (const sess of ["A","B","C","D","E"]) {
+      const wo = sessionsGetter(sess, wk);
+      if (!wo) continue;
+      const idx = wo.exercises.findIndex(e => baseMovement(e.exercise) === targetBase);
+      if (idx === -1) continue;
+      const entry = allWeights[`w${wk}_${sess}_${idx}`];
+      if (!entry?.sets) continue;
+      const logged = entry.sets.filter(s => s?.weight && parseFloat(s.weight) > 0);
+      if (logged.length === 0) continue;
+      const weightsUsed = logged.map(s => parseFloat(s.weight));
+      const repsHit     = logged.map(s => parseInt(s.reps) || 0);
+      return {
+        week: wk,
+        topWeight: Math.max(...weightsUsed),
+        minReps: Math.min(...repsHit.filter(r => r > 0).length ? repsHit.filter(r => r > 0) : [0]),
+        avgReps: Math.round(repsHit.reduce((a,b)=>a+b,0) / repsHit.length),
+      };
+    }
+  }
+  return null;
+}
+
+function suggestNextWeight(last, repStr, exerciseName) {
+  if (!last || !last.topWeight) return null;
+  const { low, high } = parseRepTarget(repStr);
+  const compound = isCompoundLift(exerciseName);
+  const inc = compound ? 5 : 2.5;   // lb increments
+  const w = last.topWeight;
+
+  // Hit or exceeded top of rep range on the hardest set → add weight
+  if (last.minReps >= high) {
+    return { weight: w + (compound ? 5 : 5), note: `Last: ${w} lb × ${last.minReps}+ (wk ${last.week}). Hit the top — add ${compound ? 5 : 5} lb.` };
+  }
+  // Comfortably in range → small bump
+  if (last.minReps >= low) {
+    return { weight: w + inc, note: `Last: ${w} lb × ${last.minReps} reps (wk ${last.week}). In range — try +${inc} lb or add a rep.` };
+  }
+  // Missed the bottom of range → repeat weight, chase reps
+  if (last.minReps > 0) {
+    return { weight: w, note: `Last: ${w} lb × ${last.minReps} reps (wk ${last.week}). Below target — repeat ${w} lb, aim for ${low}+.` };
+  }
+  return { weight: w, note: `Last logged ${w} lb (wk ${last.week}).` };
+}
+
+// ─── REST TIMER ───────────────────────────────────────────────────────────────
+// Target rest in seconds by phase + exercise type. Compounds rest longer,
+// and later/heavier phases rest longer.
+function restSecondsFor(phase, exType) {
+  const table = {
+    1: { compound: 120, isolation: 60,  core: 45 },
+    2: { compound: 90,  isolation: 60,  core: 45 },
+    3: { compound: 180, isolation: 90,  core: 45 },
+    4: { compound: 210, isolation: 90,  core: 60 },
+    5: { compound: 120, isolation: 75,  core: 45 },
+  };
+  return (table[phase] || table[1])[exType] || 90;
+}
+function classifyExercise(name) {
+  if (/Pallof|Bird Dog|Dead Bug|Cable Chop|Plank|Curl-Up|McGill/i.test(name)) return "core";
+  return isCompoundLift(name) ? "compound" : "isolation";
+}
+function fmtTime(s) {
+  const m = Math.floor(s / 60), sec = s % 60;
+  return m > 0 ? `${m}:${String(sec).padStart(2,"0")}` : `${sec}s`;
+}
+function RestTimer({ seconds, color }) {
+  const [remaining, setRemaining] = useState(null); // null = not started
+  const [running, setRunning] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (running && remaining > 0) {
+      ref.current = setTimeout(() => setRemaining(r => r - 1), 1000);
+    } else if (running && remaining === 0) {
+      setRunning(false);
+      try { if (navigator.vibrate) navigator.vibrate([200,100,200]); } catch {}
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) { const ac = new Ctx(); const o = ac.createOscillator(); const g = ac.createGain();
+          o.connect(g); g.connect(ac.destination); o.frequency.value = 880; o.start();
+          g.gain.setValueAtTime(0.15, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.5);
+          o.stop(ac.currentTime + 0.5); }
+      } catch {}
+    }
+    return () => clearTimeout(ref.current);
+  }, [running, remaining]);
+
+  const start = () => { setRemaining(seconds); setRunning(true); };
+  const stop  = () => { setRunning(false); setRemaining(null); clearTimeout(ref.current); };
+
+  if (remaining === null) {
+    return (
+      <button onClick={start}
+        style={{ display:"flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${color}55`, color, borderRadius:8, padding:"6px 10px", cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }}>
+        ⏱ Rest {fmtTime(seconds)} — tap to start
+      </button>
+    );
+  }
+  const done = remaining === 0;
+  return (
+    <button onClick={stop}
+      style={{ display:"flex", alignItems:"center", gap:8, width:"100%", justifyContent:"center",
+        background: done ? "#10B981" : color + "22", border:`1px solid ${done ? "#10B981" : color}`, color: done ? "#0f1117" : color,
+        borderRadius:8, padding:"8px 10px", cursor:"pointer", fontSize:14, fontFamily:"inherit", fontWeight:800 }}>
+      {done ? "✓ Rest done — tap to reset" : `⏱ ${fmtTime(remaining)}  ·  tap to stop`}
+    </button>
+  );
+}
+
+// ─── BACKUP / RESTORE ─────────────────────────────────────────────────────────
+// Exports every localStorage key for this app to a downloadable JSON file.
+const APP_KEY_PREFIX = "h365v2";
+function exportBackup() {
+  const data = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(APP_KEY_PREFIX)) data[k] = localStorage.getItem(k);
+    }
+  } catch {}
+  const blob = new Blob([JSON.stringify({ app:"hypertrophy365v2", exported:new Date().toISOString(), data }, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `hypertrophy365-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function importBackup(file, onDone) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const data = parsed.data || parsed;
+      Object.entries(data).forEach(([k, v]) => {
+        if (k.startsWith(APP_KEY_PREFIX)) localStorage.setItem(k, v);
+      });
+      onDone(true);
+    } catch { onDone(false); }
+  };
+  reader.onerror = () => onDone(false);
+  reader.readAsText(file);
+}
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [currentWeek, setCurrentWeek] = useState(() => parseInt(LS.get("h365v2_week") || "1"));
@@ -445,6 +622,14 @@ export default function App() {
             <div style={S.sublogo}>V2 · 5-Day PPL · Max Size · Low-Back Safe</div>
           </div>
           <button onClick={() => setView("progress")} style={S.progressBtn}>📈 Progress</button>
+        </div>
+        <div style={{ display:"flex", gap:8, marginTop:12 }}>
+          <button onClick={exportBackup} style={{ flex:1, background:"#1a1f2e", border:"1px solid #2a2f3a", color:"#9ca3af", padding:"8px", borderRadius:8, cursor:"pointer", fontSize:12, fontFamily:"inherit", fontWeight:600 }}>⬇ Backup my data</button>
+          <label style={{ flex:1, background:"#1a1f2e", border:"1px solid #2a2f3a", color:"#9ca3af", padding:"8px", borderRadius:8, cursor:"pointer", fontSize:12, fontWeight:600, textAlign:"center" }}>
+            ⬆ Restore
+            <input type="file" accept="application/json" style={{ display:"none" }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) importBackup(f, (ok) => { if (ok) { window.location.reload(); } else { alert("Could not read that backup file."); } }); }} />
+          </label>
         </div>
       </div>
 
@@ -582,7 +767,13 @@ function WorkoutView({ weekNum, session, weights, onSaveWeights, onComplete, com
   };
   const getSD  = (ei, si) => weights[getKey(ei)]?.sets?.[si] || { weight:"", reps:"" };
   const nSets  = (s) => { const m = s.match(/(\d+)/); return m ? parseInt(m[1]) : 3; };
-  const isBW   = (n) => ["Band Pull-Apart","Cable Face Pull","Face Pull"].some(k => n.includes(k));
+  const isBW   = (n) => ["Band Pull-Apart","Cable Face Pull","Face Pull","Bird Dog","Dead Bug","Pallof","Cable Chop"].some(k => n.includes(k));
+
+  // Progressive-load suggestion per exercise (reads history, suggests next weight)
+  const suggestionFor = (exItem) => {
+    const last = findLastPerformance(weights, exItem.exercise, weekNum, getWorkout);
+    return suggestNextWeight(last, exItem.reps, exItem.exercise);
+  };
 
   if (!workout) return null;
 
@@ -636,6 +827,19 @@ function WorkoutView({ weekNum, session, weights, onSaveWeights, onComplete, com
             </div>
             {!isBW(exItem.exercise) ? (
               <div style={S.setsGrid}>
+                {(() => {
+                  const sug = suggestionFor(exItem);
+                  if (!sug) return null;
+                  return (
+                    <div style={{ display:"flex", alignItems:"center", gap:8, background:"#0f1f18", border:"1px solid #10B98155", borderRadius:8, padding:"8px 10px", marginBottom:10 }}>
+                      <span style={{ fontSize:15 }}>📈</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:"#34D399" }}>Suggested: {sug.weight} lb</div>
+                        <div style={{ fontSize:11, color:"#9ca3af", lineHeight:1.4, marginTop:2 }}>{sug.note}</div>
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div style={S.setsHead}>
                   <span style={S.setHdr}>SET</span>
                   <span style={S.setHdr}>WEIGHT (lbs)</span>
@@ -655,8 +859,18 @@ function WorkoutView({ weekNum, session, weights, onSaveWeights, onComplete, com
                     </div>
                   );
                 })}
+                <div style={{ marginTop:10 }}>
+                  <RestTimer seconds={restSecondsFor(phaseNum, classifyExercise(exItem.exercise))} color={color} />
+                </div>
               </div>
-            ) : <div style={S.bwNote}>Bodyweight / Band — log in session notes if needed</div>}
+            ) : (
+              <div style={S.bwNote}>
+                Bodyweight / Band — log in session notes if needed
+                <div style={{ marginTop:10 }}>
+                  <RestTimer seconds={restSecondsFor(phaseNum, classifyExercise(exItem.exercise))} color={color} />
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
